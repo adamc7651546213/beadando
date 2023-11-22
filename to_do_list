@@ -1,0 +1,20 @@
+class to_do_list_modul:
+    def __init__(self):
+        self.tasks = []
+
+    # Elökésziti a feladatlistát üres listával     |fenti
+
+
+    # Hozzáad egy új feladatot a to-do listáhot
+    def add_task(self, task):
+        self.tasks.append(task)
+
+
+    # Eltávolít egy értéket a to-do listából
+    def remove_task(self, task):
+        if task in self.tasks:
+            self.tasks.remove(task)
+
+    # Visszaadja a tartalmat
+    def get_tasks(self):
+        return self.tasks
