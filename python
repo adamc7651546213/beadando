@@ -1,0 +1,100 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget, QLineEdit, QPushButton
+from PyQt5.QtCore import Qt
+from datetime import datetime
+
+class TaskManager:
+    def __init__(self):
+        self.tasks = []
+
+    def add_task(self, task):
+        self.tasks.append(task)
+
+    def remove_task(self, task):
+        if task in self.tasks:
+            self.tasks.remove(task)
+
+    def get_tasks(self):
+        return self.tasks
+
+class ToDoListApp(QWidget):
+    def __init__(self):
+        super().__init__()
+
+
+        self.setWindowTitle("To-Do Lista python Alkalmazás")
+        self.task_manager = TaskManager()
+
+        # Felhasználói felület létrehozása és a gombok hozzáadása
+        self.task_list_widget = QListWidget()
+        self.task_entry = QLineEdit()
+        self.hozzaad_gomb = QPushButton("Hozzáad (+)")
+        self.eltavolit_gomb = QPushButton("Eltávolít (-)")
+
+        # Eseménykezelők hozzáadása a gombokhoz és a beviteli mezőhöz
+        self.hozzaad_gomb.clicked.connect(self.add_task)
+        self.eltavolit_gomb.clicked.connect(self.remove_task)
+        self.task_entry.returnPressed.connect(self.add_task)
+
+        # Alkalmazás elrendezése
+        layout = QVBoxLayout()
+        layout.addWidget(self.task_entry)
+        layout.addWidget(self.hozzaad_gomb)
+        layout.addWidget(self.task_list_widget)
+        layout.addWidget(self.eltavolit_gomb)
+
+        self.setLayout(layout)
+
+        # Mentett adatok betöltése
+        self.load_tasks_from_file()
+
+    # Új feladat hozzáadása a feladatkezelőhöz időbélyeggel
+    def add_task(self):
+        task_text = self.task_entry.text()
+        if task_text:
+            timestamp = datetime.now().strftime("%H:%M  hó/%d")
+            task = f"{timestamp} - {task_text}"
+
+            self.task_manager.add_task(task)
+            self.update_task_list()
+            self.task_entry.clear()
+            self.save_tasks_to_file()
+
+    # Kijelölt feladat eltávolítása a feladatkezelőből
+    def remove_task(self):
+        selected_item = self.task_list_widget.currentItem()
+        if selected_item:
+            task = selected_item.text()
+            self.task_manager.remove_task(task)
+            self.update_task_list()
+            self.save_tasks_to_file()
+
+    # A feladatlista frissítése a feladatkezelőben tárolt értékek alapján
+    def update_task_list(self):
+        self.task_list_widget.clear()
+        for task in self.task_manager.get_tasks():
+            self.task_list_widget.addItem(task)
+
+    # A bevitt adatok mentése fájlba
+    def save_tasks_to_file(self):
+        with open("task.txt", "w") as file:
+            tasks = self.task_manager.get_tasks()
+            file.write("\n".join(tasks))
+
+    # Mentett érték betöltése fájlból
+    def load_tasks_from_file(self):
+        try:
+            with open("task.txt", "r") as file:
+                tasks = file.read().splitlines()
+                for task in tasks:
+                    self.task_manager.add_task(task)
+                self.update_task_list()
+        except FileNotFoundError:
+            pass
+
+# Innen indul a program
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = ToDoListApp()
+    window.show()
+    sys.exit(app.exec_())
